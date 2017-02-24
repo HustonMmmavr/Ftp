@@ -12,6 +12,16 @@
 #define DEFAULT_PATH "/home/cybe"
 #endif
 #undef unicode
+
+#ifdef _WIN32
+#define DIRECTORY_DIVIDER '\\'
+#define ROOT_DIR "D:\\"
+#elif __unix__
+#defint DIRECTORY_DIVIDER '/'
+#deifne ROOT_DIR "/"
+#endif
+
+
 ///
 //char ServerResponserArray[][] =
 //{
@@ -78,6 +88,7 @@ class FtpServer : public Server
 private:
     Socket *commandSocket;
     Socket *senderSocket;
+	char directoryDivider;
 public:
     FtpServer()
     {
@@ -85,7 +96,7 @@ public:
         commandSocket->SetDirectPort(21);
         commandSocket->Bind();
         commandSocket->Listen(10);
-
+		directoryDivider = DIRECTORY_DIVIDER;
     }
 
     ~FtpServer()
@@ -314,6 +325,26 @@ public:
 	{
 		args[strlen(args) - 2] = 0;
 	}
+
+	/*
+	void Mkd(Socket *commandSocket, char *path, char *args)
+	{
+		char dirName[MAX_PATH];
+		char response[128];
+		FillResponse(response, 200, "Directory Created");
+		//sprintf(dirName, "%s%c", path, '\\');
+
+		//char directoryDivider = DIRECTORY_DIVIDER;
+		if (args[0] == directoryDivider)
+			strcpy(dirName, args);
+		else
+			sprintf(dirName, "%s/%s", path, args);
+
+		Dir::MkDir(dirName);
+		commandSocket->Send(response, strlen(response));
+	}
+	*/
+
     void Mkd(Socket *commandSocket, char *path, char *args)
     {
         char dirName[MAX_PATH];
@@ -354,32 +385,77 @@ public:
         return NULL;
     }*/
 
-    void Cwd(Socket *commandSocket, char *path, char* args)
-    {
-        char response[128];
-        //args[strlen(args) - 2] = 0;
+
+	inline char *LastChar(char *str)
+	{
+		return &str[strlen(str) - 1];
+	}
+
+/*
+	void Cwd(Socket *commandSocket, char *path, char* args)
+	{
+		char response[128];
+		//char directoryDivider = DIRECTORY_DIVIDER;
+		//args[strlen(args) - 2] = 0;
 #ifdef _WIN32
 		int isAlpha = ((args[0] > 64) && (args[0] < 91)) || ((args[0] > 96) && (args[0] < 123));
-		if (isAlpha && args[1] == ':' &&  args[2] == '\\')
+		if (isAlpha && args[1] == ':' &&  args[2] == directoryDivider)
 		{
 			strcpy(path, args);
-			if (path[strlen(path) - 1] != '\\')
+			if (*LastChar(path) != directoryDivider)
 				strcat(path, "\\");
 		}
 		else
 		{
-			if (path[strlen(path) - 1] != '\\')
+			if (*LastChar(path) != directoryDivider)
+				strcat(path, "\\");
+			strcat(path, args);
+		}
+#elif __unix__
+		printf("%s\n", args);
+
+		if (args[0] == directoryDivider)
+			strcpy(path, args);
+		else
+		{
+			if (*LastChar(path) != directoryDivider)
+				strcat(path, "/");
+			strcat(path, args);
+		}
+#endif
+		printf("%s\n", path);
+		FillResponse(response, 200, "Directory changed");
+		commandSocket->Send(response, strlen(response));
+	}
+*/
+
+    void Cwd(Socket *commandSocket, char *path, char* args)
+    {
+        char response[128];
+		char directoryDivider = DIRECTORY_DIVIDER;
+        //args[strlen(args) - 2] = 0;
+#ifdef _WIN32
+		int isAlpha = ((args[0] > 64) && (args[0] < 91)) || ((args[0] > 96) && (args[0] < 123));
+		if (isAlpha && args[1] == ':' &&  args[2] == directoryDivider)
+		{
+			strcpy(path, args);
+			if (path[strlen(path) - 1] != directoryDivider)
+				strcat(path, "\\");
+		}
+		else
+		{
+			if (path[strlen(path) - 1] != directoryDivider)
 				strcat(path, "\\");
 			strcat(path, args);
 		}
 #elif __unix__
         printf("%s\n", args);
 
-        if (args[0] == '/')
+        if (args[0] == directoryDivider)
             strcpy(path, args);
         else
         {
-            if (path[strlen(path) - 1] != '/')
+            if (path[strlen(path) - 1] != directoryDivider)
                 strcat(path, "/");
             strcat(path, args);
         }
@@ -389,8 +465,38 @@ public:
         commandSocket->Send(response, strlen(response));
     }
 
+/*
+	void Cdup(Socket *commandSocket, char *oldPath)
+	{
+
+		//char directoryDivider = DIRECTORY_DIVIDER;
+		char response[128];
+		FillResponse(response, 200, "Directory changed");
+		int len = strlen(oldPath);
+		bool flag = 1;
+		if (len == 1)
+		{
+			commandSocket->Send(response, strlen(response));
+			return;
+		}
+		oldPath[len] = '\0';
+		for (int i = len - 1; i >= 0 && flag; i--)
+		{
+			if (oldPath[i] == directoryDivider)
+				flag = 0;
+			else
+				oldPath[i] = 0;
+		}
+		*LastChar(oldPath) = '\0';
+		if (strlen(oldPath) == 0)
+			*LastChar(oldPath) = '/';
+		commandSocket->Send(response, strlen(response));
+	}
+	*/
     void Cdup(Socket *commandSocket, char *oldPath)
     {
+
+		//char directoryDivider = DIRECTORY_DIVIDER;
         char response[128];
         FillResponse(response, 200, "Directory changed");
         int len = strlen(oldPath);
@@ -403,15 +509,10 @@ public:
         oldPath[len] = '\0';
         for (int i = len - 1; i >= 0 && flag; i--)
         {
-#ifdef _WIN32
-         if (oldPath[i] == '\\')
-
-#elif __unix__
-            if (oldPath[i] == '/')
-#endif
-                flag = 0;
-            else
-                oldPath[i] = 0;
+			if (oldPath[i] == directoryDivider)
+				flag = 0;
+			else
+				oldPath[i] = 0;
         }
         oldPath[strlen(oldPath) - 1] = '\0';
         if (strlen(oldPath) == 0)
@@ -426,7 +527,11 @@ public:
         //file[strlen(file) - 2] = 0;
         char delFile[MAX_PATH];
 
-        if (file[0] == '/')
+		//char directoryDivider = DIRECTORY_DIVIDER;
+
+
+		///////////////////////////////////
+        if (file[0] == directoryDivider)//'/')
             strcpy(delFile, file);
         else
             sprintf(delFile, "%s/%s", path, file);
@@ -563,9 +668,16 @@ public:
         return senderSocket;
     }
 
+	void FillAbsolutePath(char *absPath, char *path, char *fileName)
+	{
+		//char div = DIRECTORY_DIVIDER;
+		sprintf(absPath, "%s%c%s", path, directoryDivider, fileName);
+	}
+
+	/*
     void FillAbsolutePath(char *absPath, char *path, char *fileName)
     {
-        char div;
+        char div = D;
 #ifdef _WIN32
         div = '\\';
 #elif __unix__
@@ -573,6 +685,7 @@ public:
 #endif
         sprintf(absPath, "%s%c%s", path, div, fileName);
     }
+	*/
 
     void Retr(Socket *commandSocket, Socket *dataSocket, char *path, char *args, TypeFile tF)
     {
@@ -590,7 +703,7 @@ public:
         int readed = 0;
         while(readed = f->ReadFromFile(buf, blockSize))
             dataSocket->Send((char*)buf, readed);
-        dataSocket->Send("\r\n", 2);
+        //dataSocket->Send("\r\n", 2);
         dataSocket->Close();
         //f->Close();
         delete f;
@@ -608,7 +721,7 @@ public:
         FillAbsolutePath(fileName, path, args);
         File *f = new File();
         f->Open(fileName, FileMode::OpenWriteIfExist);
-        int size = 1024 * 256;
+		int size = 2 << 18;//1024 * 256;
         char buf[256*1024];
         int recieved = 0;
         while(recieved = dataSocket->Recv(buf, size))

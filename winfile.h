@@ -20,7 +20,7 @@ class WindowsFile : public IFile
 	HANDLE _hFile;
 	char *_fileName;
 	wchar_t *_wFileName;
-	byte *cacheBuffer;
+	//byte *cacheBuffer;
 	int sizeCacheBuffer;
 	int cacheBufferPos;
 	bool opened;
@@ -78,16 +78,16 @@ class WindowsFile : public IFile
 		return (int)readedByte;
 	}
 
-	int ReadBlock_()
-	{
-		int readedBytes;
-		BOOL res = ReadFile(_hFile, (LPVOID)cacheBuffer, MINBUFFERSIZE, (LPDWORD)&readedBytes, NULL);
-		if (!res)
-			ThrowFileException("Error ReadFile, GetLatError:", GetLastError());
+	//int ReadBlock_()
+	//{
+	//	int readedBytes;
+	//	BOOL res = ReadFile(_hFile, (LPVOID)cacheBuffer, MINBUFFERSIZE, (LPDWORD)&readedBytes, NULL);
+	//	if (!res)
+	//		ThrowFileException("Error ReadFile, GetLatError:", GetLastError());
 
-		if (readedBytes < sizeCacheBuffer) sizeCacheBuffer = readedBytes;
-		return readedBytes;
-	}
+	//	if (readedBytes < sizeCacheBuffer) sizeCacheBuffer = readedBytes;
+	//	return readedBytes;
+	//}
 
 	//
 	static unsigned long long ReadBlock_(HANDLE hFile, byte* buf, unsigned long long sizeBuf = MINBUFFERSIZE)
@@ -177,9 +177,9 @@ public:
 			ThrowException("Cant Alloc memory wchar_t");
 
 		sizeCacheBuffer = MINBUFFERSIZE;
-		cacheBuffer = new byte[MINBUFFERSIZE];
-		if (!cacheBuffer)
-			ThrowException("Cant Alloc memory wchar_t");
+		//cacheBuffer = new byte[MINBUFFERSIZE];
+		//if (!cacheBuffer)
+		//	ThrowException("Cant Alloc memory wchar_t");
 
 		cacheBufferPos = 0;
 
@@ -194,7 +194,7 @@ public:
 		if (opened) Close();
 		if (_fileName) delete _fileName;
 		if (_wFileName) delete _wFileName;
-		if (cacheBuffer) delete cacheBuffer;
+		//if (cacheBuffer) delete cacheBuffer;
 	}
 
 	static char* GetFileInfo()

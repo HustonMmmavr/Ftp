@@ -13,6 +13,7 @@
 #include "file.h"
 #include "windir.h"
 #include "unixdir.h"
+#define MAX_PATH 4096
 class IDir
 {
 	//virtual void Chdir();
@@ -25,7 +26,7 @@ class Dir: public IDir
 {
 public:
 	IDir *dir;
-
+	char path[MAX_PATH];
 	Dir()
 	{
 #ifdef _WIN32
