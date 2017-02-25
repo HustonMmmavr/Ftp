@@ -248,3 +248,4 @@ f->SetOffset(0, MoveMethod::End);
 //c = f->ReadByte();
 //c = f->ReadByte();
 //c = f->ReadByte();
+привет
