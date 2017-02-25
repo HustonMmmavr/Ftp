@@ -36,30 +36,30 @@ public:
 
 	WindowsSocket(short port, char *ip, int aFamily = AF_INET, int type = SOCK_STREAM, int protocol = IPPROTO_TCP)
 	{
-		try
-		{
+	//	try
+	//	{
 			sock = INVALID_SOCKET;
 			InitSocket(aFamily, type, protocol);
 			SetSocketPort(port, ip);
-		}
-		catch (Exception &e)
-		{
-			throw e;
-		}
+	//	}
+	//	catch (Exception &e)
+	//	{
+	//		throw e;
+	//	}
 	}
 
 	WindowsSocket(short port, int aFamily = AF_INET, int type = SOCK_STREAM, int protocol = IPPROTO_TCP)
 	{
-		try
-		{
+	//	try
+	//	{
 			sock = INVALID_SOCKET;
 			InitSocket(aFamily, type, protocol);
 			SetSocketPort(port, 0);
-		}
-		catch (Exception &e)
-		{
-			throw e;
-		}
+	//	}
+	//	catch (Exception &e)
+	//	{
+	//		throw e;
+	//	}
 	}
 
 

@@ -5,6 +5,7 @@
 #include "unixfile.h"
 #include "exeption.h"
 #include "convert.h"
+#define FILE_BUFFER_SIZE 1024
 
 void ResizeStringArray(char ***arrayStrings, int *oldSize, int rCoeff)
 {
@@ -45,6 +46,15 @@ class File : public IFile
 {
 private:
 	IFile *file;
+	int buffersSize;
+	byte *fileReadedBytesBuffer;
+	byte *fileWritedBytesBuffer;
+	int posInReadedBuf;
+	int posInWritedBuf;
+	int readedBytes;
+	int writedBytes;
+
+	//byte buf[FILE_BUFFER_SIZE];
 
 	static int ReadStringFromBuffer(char **string, byte *buf, int *startPos, int sizeBuf)
 	{
@@ -77,9 +87,35 @@ private:
 		*string = str;
 		return sizeString;
 	}
+
+
+	inline void CheckAllocate(byte *arr)
+	{
+		if (!arr)
+			ThrowException("Cant allocate memory");
+	}
 public:
 	File()
 	{
+		fileReadedBytesBuffer = fileWritedBytesBuffer = NULL;
+		readedBytes = writedBytes = 0;
+		buffersSize = FILE_BUFFER_SIZE;
+		posInReadedBuf = posInWritedBuf = 0;
+
+		fileReadedBytesBuffer = new byte[buffersSize];
+		//CheckAllocate(fileReadedBytesBuffer);
+		if (!fileReadedBytesBuffer)
+			ThrowException("Cant allocate memory");
+		
+		fileWritedBytesBuffer = new byte[buffersSize];
+		//CheckAllocate(fileWritedBytesBuffer);
+		if (!fileReadedBytesBuffer)
+			ThrowException("Cant allocate memory");
+		//if (!fileReadedBytesBuffer)
+		//	ThrowException("Cant allocate memory");
+
+		//if ()
+
 #ifdef __unix__
 		file = new UnixFile();
 #elif _WIN32 || _WIN64
@@ -126,9 +162,21 @@ public:
 
 	}
 
+	inline void CheckBuffer()
+	{
+		if (readedBytes == posInReadedBuf)
+			readedBytes = file->ReadFromFile(fileWritedBytesBuffer, buffersSize);
+	}
+
 	int ReadByte()
 	{
-		int b = file->ReadByte();
+		CheckBuffer();
+		//if (readedBytes = posInBuf)
+		//int readed = file->ReadFromFile(fileBuffer, bufferSize);
+		//if (readedBytes == posInReadedBuf)
+
+		int b = fileReadedBytesBuffer[posInReadedBuf];//file->ReadByte();
+		posInReadedBuf++;
 		return b;
 	}
 
@@ -214,7 +262,7 @@ public:
 		return countStrings;
 	}
 	
-		static char* LastModified(const char *fileName)
+	static char* LastModified(const char *fileName)
 	{
 #ifdef _WIN32
 		return WindowsFile::LastModified(fileName);

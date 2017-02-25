@@ -1,5 +1,7 @@
 #ifndef __EXCEPTION__H_
 #define __EXCEPTION__H_
+
+#include <exception>
 #define ThrowException(msg) throw Exception(msg, __FILE__, __FUNCTION__, __LINE__)// Exception *e = new Exception(msg, __FILE__, __FUNCTION__, __LINE__); throw *e;}
 
 #define ThrowExceptionWithCode(msg, code) {	\
@@ -13,6 +15,7 @@
 	sprintf(message, "%s %d",msg, code);\
 	throw FileException(message,  __FILE__, __FUNCTION__, __LINE__, code);\
 }
+
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -79,6 +82,8 @@ public:
         return errCode;
     }
 };
+
+
 
 class FileException : public Exception
 {
